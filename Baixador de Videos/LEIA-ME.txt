@@ -1,0 +1,80 @@
+﻿==============================================================
+   BAIXADOR DE VÍDEOS DO YOUTUBE (MP4)
+   by Michael Brasil Tech
+==============================================================
+
+O QUE TEM NESTA PASTA
+---------------------
+  1-INSTALAR-VIDEOS.bat        ->  Instala os programas necessários
+  2-BAIXAR-VIDEOS.bat          ->  Baixa os vídeos em MP4
+  LEIA-ME.txt                  ->  Este guia
+
+Mantenha os arquivos .bat juntos na mesma pasta.
+
+ATENÇÃO: este é o baixador de VÍDEOS. Ele é diferente do Baixador
+de Músicas. Na tela deve aparecer "BAIXADOR DE VIDEOS" com a
+faixa azul. Se aparecer "BAIXADOR DE MUSICAS", você abriu o
+programa errado.
+
+
+REQUISITOS
+----------
+  - Windows 10 (versão 1809 ou mais nova) ou Windows 11
+  - Internet
+  - App "Instalador de Aplicativo" da Microsoft Store
+    (é ele que traz o winget; o instalador avisa se faltar)
+
+
+COMO USAR
+---------
+  1. Extraia o ZIP para uma pasta (não rode de dentro do ZIP).
+  2. Dê dois cliques em  1-INSTALAR-VIDEOS.bat
+  3. Ao final, ele pergunta se quer abrir o baixador. Aperte S.
+  4. Nas próximas vezes, abra direto o  2-BAIXAR-VIDEOS.bat
+
+  Para colar o link no terminal, clique com o BOTÃO DIREITO.
+
+  Os vídeos ficam salvos em:  Vídeos\yt-dlp
+
+  QUALIDADES DISPONÍVEIS
+    [1] 1080p Full HD  ->  recomendado, abre em qualquer aparelho
+    [2] 720p HD        ->  arquivo menor
+    [3] 480p           ->  bem leve, bom para celular
+    [4] Máxima até 4K  ->  arquivo grande; use o VLC para abrir
+
+
+AVISO DO WINDOWS
+----------------
+Na primeira vez pode aparecer "O Windows protegeu o computador".
+Clique em  "Mais informações"  e depois  "Executar assim mesmo".
+Isso acontece com qualquer arquivo .bat baixado da internet.
+
+
+PROBLEMAS COMUNS
+----------------
+  * "winget não é reconhecido"
+      Instale/atualize o "Instalador de Aplicativo" na Microsoft
+      Store e reinicie o computador.
+
+  * O download deu erro
+      Use a opção [4] Atualizar no menu. O YouTube muda o site
+      com frequência e o yt-dlp precisa estar em dia.
+
+  * Aparecem códigos estranhos tipo "[92m" na tela
+      Seu Windows é antigo demais para cores. Atualize o Windows.
+
+
+USO RESPONSÁVEL
+---------------
+Baixe apenas conteúdo livre, seu, ou que você tenha permissão
+para baixar. Respeite os direitos autorais dos artistas.
+
+
+APOIE O PROJETO
+---------------
+Gostou? Doações e ajuda nos projetos:
+
+      Michael Brasil Tech  -  (94) 99177-0707
+
+Qualquer valor faz diferença. Muito obrigado!
+==============================================================

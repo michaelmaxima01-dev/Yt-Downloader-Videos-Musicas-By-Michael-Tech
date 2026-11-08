@@ -1,0 +1,69 @@
+﻿==============================================================
+   BAIXADOR DE MÚSICAS DO YOUTUBE (MP3)
+   by Michael Brasil Tech
+==============================================================
+
+O QUE TEM NESTA PASTA
+---------------------
+  instalar-yt-dlp.bat  ->  Instala os programas necessários
+  baixar-musica.bat    ->  Baixa as músicas em MP3
+  LEIA-ME.txt          ->  Este guia
+
+Mantenha os arquivos .bat juntos na mesma pasta.
+
+
+REQUISITOS
+----------
+  - Windows 10 (versão 1809 ou mais nova) ou Windows 11
+  - Internet
+  - App "Instalador de Aplicativo" da Microsoft Store
+    (é ele que traz o winget; o instalador avisa se faltar)
+
+
+COMO USAR
+---------
+  1. Extraia o ZIP para uma pasta (não rode de dentro do ZIP).
+  2. Dê dois cliques em  instalar-yt-dlp.bat
+  3. Ao final, ele pergunta se quer abrir o baixador. Aperte S.
+  4. Nas próximas vezes, abra direto o  baixar-musica.bat
+
+  Para colar o link no terminal, clique com o BOTÃO DIREITO.
+
+  As músicas ficam salvas em:  Músicas\yt-dlp
+
+
+AVISO DO WINDOWS
+----------------
+Na primeira vez pode aparecer "O Windows protegeu o computador".
+Clique em  "Mais informações"  e depois  "Executar assim mesmo".
+Isso acontece com qualquer arquivo .bat baixado da internet.
+
+
+PROBLEMAS COMUNS
+----------------
+  * "winget não é reconhecido"
+      Instale/atualize o "Instalador de Aplicativo" na Microsoft
+      Store e reinicie o computador.
+
+  * O download deu erro
+      Use a opção [4] Atualizar no menu. O YouTube muda o site
+      com frequência e o yt-dlp precisa estar em dia.
+
+  * Aparecem códigos estranhos tipo "[92m" na tela
+      Seu Windows é antigo demais para cores. Atualize o Windows.
+
+
+USO RESPONSÁVEL
+---------------
+Baixe apenas conteúdo livre, seu, ou que você tenha permissão
+para baixar. Respeite os direitos autorais dos artistas.
+
+
+APOIE O PROJETO
+---------------
+Gostou? Doações e ajuda nos projetos:
+
+      Michael Brasil Tech  -  (94) 99177-0707
+
+Qualquer valor faz diferença. Muito obrigado!
+==============================================================

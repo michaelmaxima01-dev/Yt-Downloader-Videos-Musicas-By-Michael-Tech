@@ -1,0 +1,4 @@
+# Mantem os arquivos do Windows exatamente como estao (CRLF).
+# Sem isso, o .bat pode quebrar ao baixar do GitHub.
+*.bat -text
+*.txt -text
