@@ -253,8 +253,10 @@ call :preparar_pasta_bin
 if errorlevel 1 if exist "%PASTA_BIN%\%~2" del "%PASTA_BIN%\%~2"
 exit /b 0
 
-REM Baixa um .zip, extrai com o tar do Windows e copia o programa
+REM Baixa um .zip, extrai e copia o programa para a pasta bin
 REM (%1 = link   %2 = .exe que precisa existir dentro do zip)
+REM Extracao: 1o tenta o tar do Windows; se nao existir ou falhar,
+REM usa o PowerShell (.NET), que funciona ate em Windows "lite".
 :baixar_zip
 call :preparar_pasta_bin
 set "TMPZ=%TEMP%\michaeltech-%RANDOM%%RANDOM%"
@@ -262,8 +264,7 @@ mkdir "%TMPZ%" >nul 2>&1
 "%SystemRoot%\System32\curl.exe" -L --fail --retry 3 -# -o "%TMPZ%\pacote.zip" "%~1"
 if errorlevel 1 goto baixar_zip_fim
 echo   %CINZA%Extraindo...%R%
-"%SystemRoot%\System32\tar.exe" -xf "%TMPZ%\pacote.zip" -C "%TMPZ%"
-if errorlevel 1 goto baixar_zip_fim
+call :extrair_zip "%TMPZ%\pacote.zip" "%TMPZ%"
 for /r "%TMPZ%" %%F in (%~2) do if exist "%%F" (
     copy /y "%%~dpF*.exe" "%PASTA_BIN%\" >nul
     if exist "%%~dpF*.dll" copy /y "%%~dpF*.dll" "%PASTA_BIN%\" >nul
@@ -272,6 +273,22 @@ for /r "%TMPZ%" %%F in (%~2) do if exist "%%F" (
 if exist "%TMPZ%\pacote.zip" del /q "%TMPZ%\pacote.zip"
 if exist "%TMPZ%" rd /s /q "%TMPZ%"
 exit /b 0
+
+REM Extrai um zip  (%1 = arquivo .zip   %2 = pasta de destino)
+:extrair_zip
+set "MT_ZIP=%~1"
+set "MT_DEST=%~2"
+set "MT_TAR="
+if exist "%SystemRoot%\System32\tar.exe" set "MT_TAR=%SystemRoot%\System32\tar.exe"
+if not defined MT_TAR if exist "%SystemRoot%\Sysnative\tar.exe" set "MT_TAR=%SystemRoot%\Sysnative\tar.exe"
+if defined MT_TAR (
+    "%MT_TAR%" -xf "%MT_ZIP%" -C "%MT_DEST%" >nul 2>&1
+    if not errorlevel 1 exit /b 0
+)
+echo   %CINZA%Usando o PowerShell para extrair...%R%
+set "MT_DEST=%MT_DEST%\ps"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [IO.Compression.ZipFile]::ExtractToDirectory($env:MT_ZIP, $env:MT_DEST)"
+exit /b %errorlevel%
 
 REM Recarrega o PATH do registro para reconhecer programas recem
 REM instalados sem precisar fechar e abrir o terminal.
@@ -288,6 +305,7 @@ echo.
 echo %VERM%  Possiveis causas:%R%
 echo %VERM%   - Sem internet ou rede bloqueando o download%R%
 echo %VERM%   - Antivirus bloqueou o arquivo baixado%R%
+echo %VERM%   - Windows sem as ferramentas de ZIP/PowerShell%R%
 echo %VERM%   - A instalacao foi cancelada na janela de permissao%R%
 echo.
 echo   %AMAR%Tente:%R% reiniciar o PC e rodar este instalador de novo.
