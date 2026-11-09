@@ -7,7 +7,7 @@ Dois programas simples para **Windows 10/11** que baixam do YouTube com poucos c
 | 🎵 **Baixador de Músicas** | Baixa músicas e playlists em **MP3**, com capa e nome do artista | `Músicas\yt-dlp` |
 | 🎬 **Baixador de Vídeos** | Baixa vídeos e playlists em **MP4** (1080p, 720p, 480p ou máxima) | `Vídeos\yt-dlp` |
 
-Os dois usam o [yt-dlp](https://github.com/yt-dlp/yt-dlp) e o [FFmpeg](https://ffmpeg.org). O instalador de cada projeto baixa esses programas automaticamente pelo `winget`.
+Os dois usam o [yt-dlp](https://github.com/yt-dlp/yt-dlp), o [Deno](https://deno.com) (o YouTube exige para o yt-dlp funcionar) e o [FFmpeg](https://ffmpeg.org). O instalador de cada projeto instala esses programas automaticamente: primeiro tenta pelo `winget` e, se ele falhar, baixa direto do GitHub oficial de cada programa.
 
 ---
 
@@ -21,7 +21,7 @@ Os dois usam o [yt-dlp](https://github.com/yt-dlp/yt-dlp) e o [FFmpeg](https://f
 
 Pasta: [`Baixador de Musicas`](Baixador%20de%20Musicas)
 
-1. Dê dois cliques em **`instalar-yt-dlp.bat`**. Ele instala o yt-dlp e o FFmpeg.
+1. Dê dois cliques em **`instalar-yt-dlp.bat`**. Ele instala o yt-dlp, o Deno e o FFmpeg.
 2. No final, aperte **S** para abrir o baixador.
 3. Nas próximas vezes, abra direto o **`baixar-musica.bat`**.
 
@@ -53,14 +53,15 @@ Depois de cada download, o programa confere se o arquivo veio com imagem e som.
 
 - Windows 10 (versão 1809 ou mais nova) ou Windows 11
 - Internet
-- App **Instalador de Aplicativo** da Microsoft Store, que traz o `winget`. O instalador avisa se ele estiver faltando.
+- O `winget` (app **Instalador de Aplicativo** da Microsoft Store) é recomendado, mas **não é obrigatório**: sem ele, o instalador baixa tudo direto do site oficial.
 
 ## 🛠️ Problemas comuns
 
 | Problema | Solução |
 |---|---|
 | "O Windows protegeu o computador" | Clique em **Mais informações** e depois em **Executar assim mesmo**. |
-| "winget não é reconhecido" | Instale ou atualize o **Instalador de Aplicativo** na Microsoft Store e reinicie o PC. |
+| "Falha ao extrair o conteúdo do arquivo morto" | É um erro do winget ao instalar o Deno. O instalador já resolve sozinho: ele baixa o Deno direto do site oficial (Plano B). |
+| "winget não é reconhecido" | Não tem problema: o instalador baixa tudo direto do site oficial. |
 | O download deu erro | Use a opção **Atualizar** no menu. O YouTube muda o site com frequência. |
 | O vídeo só toca o som | Baixe em 1080p ou abra o arquivo no VLC. |
 | Aparecem códigos como `[92m` na tela | O Windows é antigo demais para mostrar cores. Atualize o Windows. |

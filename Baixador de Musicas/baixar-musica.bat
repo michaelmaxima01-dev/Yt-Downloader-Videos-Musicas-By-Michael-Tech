@@ -33,10 +33,12 @@ REM ============================================================
 call :atualizar_path
 set "FALTA_YTDLP=0"
 set "FALTA_FFMPEG=0"
+set "FALTA_DENO=0"
 where yt-dlp >nul 2>&1 || set "FALTA_YTDLP=1"
 where ffmpeg >nul 2>&1 || set "FALTA_FFMPEG=1"
+where deno >nul 2>&1 || set "FALTA_DENO=1"
 
-if "%FALTA_YTDLP%%FALTA_FFMPEG%"=="00" goto requisitos_ok
+if "%FALTA_YTDLP%%FALTA_DENO%%FALTA_FFMPEG%"=="000" goto requisitos_ok
 
 cls
 echo.
@@ -52,6 +54,14 @@ if "%FALTA_YTDLP%"=="1" (
     echo.
 ) else (
     echo %VERDE%   [V] yt-dlp %CINZA%- ja instalado%R%
+    echo.
+)
+if "%FALTA_DENO%"=="1" (
+    echo %VERM%   [X] Deno %CINZA%- obrigatorio para o YouTube funcionar%R%
+    echo       %AMAR%Comando:%R% %BRANCO%winget install DenoLand.Deno%R%
+    echo.
+) else (
+    echo %VERDE%   [V] Deno %CINZA%- ja instalado%R%
     echo.
 )
 if "%FALTA_FFMPEG%"=="1" (
@@ -82,6 +92,7 @@ goto sair_falta
 call :atualizar_path
 where yt-dlp >nul 2>&1 || goto ainda_falta
 where ffmpeg >nul 2>&1 || goto ainda_falta
+where deno >nul 2>&1 || goto ainda_falta
 goto requisitos_ok
 
 :ainda_falta
@@ -108,7 +119,7 @@ echo        %NEG%%BRANCO%BAIXADOR DE MUSICAS%R%   %CINZA%-%R%   %VERM%You%BRANCO
 echo %ARCO%
 echo.
 echo   %CINZA%Pasta:%R%  %AMAR%%PASTA%%R%
-echo   %CINZA%Status:%R% %VERDE%[V] yt-dlp%R%   %VERDE%[V] FFmpeg%R%
+echo   %CINZA%Status:%R% %VERDE%[V] yt-dlp%R%   %VERDE%[V] Deno%R%   %VERDE%[V] FFmpeg%R%
 echo.
 echo   %NEG%%BRANCO%BAIXAR%R%
 echo     %VERDE%[1]%R%  Uma musica          %CINZA%cole o link e pronto%R%
@@ -220,7 +231,10 @@ cls
 echo.
 echo %CIANO%  ==================  ATUALIZAR O YT-DLP  ==================%R%
 echo.
-winget upgrade --id yt-dlp.yt-dlp -e --source winget --accept-source-agreements --accept-package-agreements
+yt-dlp -U
+if errorlevel 1 (
+    where winget >nul 2>&1 && winget upgrade --id yt-dlp.yt-dlp -e --source winget --accept-source-agreements --accept-package-agreements
+)
 echo.
 echo %VERDE%  Verificacao de atualizacao concluida.%R%
 echo.
@@ -271,7 +285,7 @@ set "PATH_SYS="
 set "PATH_USR="
 for /f "tokens=2,*" %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do set "PATH_SYS=%%B"
 for /f "tokens=2,*" %%A in ('reg query "HKCU\Environment" /v Path 2^>nul') do set "PATH_USR=%%B"
-call set "PATH=%LOCALAPPDATA%\Microsoft\WindowsApps;%LOCALAPPDATA%\Microsoft\WinGet\Links;%PATH_SYS%;%PATH_USR%;%PATH%"
+call set "PATH=%LOCALAPPDATA%\MichaelTech\bin;%LOCALAPPDATA%\Microsoft\WindowsApps;%LOCALAPPDATA%\Microsoft\WinGet\Links;%PATH_SYS%;%PATH_USR%;%PATH%"
 exit /b 0
 
 REM ============================================================

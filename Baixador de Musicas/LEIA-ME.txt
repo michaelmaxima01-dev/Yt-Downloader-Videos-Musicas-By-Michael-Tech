@@ -16,8 +16,12 @@ REQUISITOS
 ----------
   - Windows 10 (versão 1809 ou mais nova) ou Windows 11
   - Internet
-  - App "Instalador de Aplicativo" da Microsoft Store
-    (é ele que traz o winget; o instalador avisa se faltar)
+  - Recomendado: app "Instalador de Aplicativo" da Microsoft Store
+    (traz o winget). Sem ele, o instalador baixa tudo direto
+    do site oficial de cada programa.
+
+  O instalador instala 3 programas: yt-dlp, Deno (o YouTube
+  exige) e FFmpeg.
 
 
 COMO USAR
@@ -41,9 +45,12 @@ Isso acontece com qualquer arquivo .bat baixado da internet.
 
 PROBLEMAS COMUNS
 ----------------
+  * "Falha ao extrair o conteúdo do arquivo morto"
+      Erro do winget ao instalar o Deno. O instalador resolve
+      sozinho baixando direto do site oficial (Plano B).
+
   * "winget não é reconhecido"
-      Instale/atualize o "Instalador de Aplicativo" na Microsoft
-      Store e reinicie o computador.
+      Sem problema: o instalador baixa tudo direto do site oficial.
 
   * O download deu erro
       Use a opção [4] Atualizar no menu. O YouTube muda o site

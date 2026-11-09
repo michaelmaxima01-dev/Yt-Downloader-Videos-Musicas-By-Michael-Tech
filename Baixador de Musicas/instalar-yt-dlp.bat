@@ -1,12 +1,12 @@
 @echo off
 setlocal
-title Auto Install - yt-dlp + FFmpeg
+title Auto Install - yt-dlp + Deno + FFmpeg
 
 set "WIN_MAJOR=10"
 set "WIN_BUILD=99999"
 
 REM ============================================================
-REM  1) VERSAO DO WINDOWS (winget e cores exigem Windows 10/11)
+REM  1) VERSAO DO WINDOWS (cores, curl e tar exigem Windows 10/11)
 REM ============================================================
 for /f "tokens=4,6 delims=[]. " %%a in ('ver') do (
     set "WIN_MAJOR=%%a"
@@ -15,7 +15,6 @@ for /f "tokens=4,6 delims=[]. " %%a in ('ver') do (
 if %WIN_MAJOR% LSS 10 (
     echo.
     echo  [ERRO] Este instalador precisa do Windows 10 ou 11.
-    echo  Sua versao do Windows nao tem o winget.
     echo.
     pause
     exit /b 1
@@ -39,19 +38,27 @@ set "ARCO=  %ESC%[91m==========%ESC%[93m==========%ESC%[92m==========%ESC%[96m==
 set "FUNDO_VERM=%ESC%[41m%ESC%[97m"
 set "LINHA=%CINZA%  ----------------------------------------------------------------%R%"
 
+REM Pasta usada quando o programa e baixado direto do site oficial
+set "PASTA_BIN=%LOCALAPPDATA%\MichaelTech\bin"
+
+REM Links oficiais (plano B, quando o winget falhar)
+set "URL_YTDLP=https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
+set "URL_DENO=https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip"
+set "URL_FFMPEG=https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl-shared.zip"
+
 cls
 echo.
 echo %ARCO%
-echo           %NEG%%BRANCO%AUTO INSTALL%R%   %CINZA%-%R%   %VERDE%yt-dlp%R% %CINZA%+%R% %CIANO%FFmpeg%R%
+echo           %NEG%%BRANCO%AUTO INSTALL%R%   %CINZA%-%R%   %VERDE%yt-dlp%R% %CINZA%+%R% %AMAR%Deno%R% %CINZA%+%R% %CIANO%FFmpeg%R%
 echo %ARCO%
 echo   %CINZA%by Michael Brasil Tech%R%
 echo.
 echo   %CINZA%Verificando o que o seu computador precisa...%R%
 echo.
 
-REM Windows 10 antigo (antes da versao 1809) nao suporta winget
+REM Windows 10 antigo (antes da versao 1809) nao tem curl/tar
 if %WIN_BUILD% LSS 17763 (
-    echo %FUNDO_VERM%  [ERRO] Seu Windows 10 esta desatualizado para o winget.  %R%
+    echo %FUNDO_VERM%  [ERRO] Seu Windows 10 esta desatualizado.  %R%
     echo.
     echo %VERM%  Atualize o Windows pelo Windows Update e tente de novo.%R%
     echo.
@@ -61,17 +68,21 @@ if %WIN_BUILD% LSS 17763 (
 echo   %VERDE%[V]%R% Windows compativel %CINZA%- build %WIN_BUILD%%R%
 
 REM ============================================================
-REM  2) WINGET (vem com o "Instalador de Aplicativo" da Store)
+REM  2) WINGET (opcional: se faltar, baixa direto do site oficial)
 REM ============================================================
 call :atualizar_path
-where winget >nul 2>&1
-if errorlevel 1 goto sem_winget
-echo   %VERDE%[V]%R% winget encontrado
+set "TEM_WINGET=1"
+where winget >nul 2>&1 || set "TEM_WINGET=0"
+if "%TEM_WINGET%"=="1" (
+    echo   %VERDE%[V]%R% winget encontrado
+) else (
+    echo   %AMAR%[?]%R% winget nao encontrado %CINZA%- vou baixar direto do site oficial%R%
+)
 
 REM ============================================================
 REM  3) INTERNET
 REM ============================================================
-curl -s -o nul --head --max-time 8 https://github.com >nul 2>&1
+"%SystemRoot%\System32\curl.exe" -s -o nul --head --max-time 8 https://github.com >nul 2>&1
 if errorlevel 1 (
     echo   %AMAR%[?]%R% Nao consegui confirmar a internet %CINZA%- vou tentar mesmo assim%R%
 ) else (
@@ -84,35 +95,65 @@ REM ============================================================
 REM  PASSO 1 - yt-dlp
 REM ============================================================
 echo.
-echo %CIANO%  [PASSO 1 de 2]%R% %NEG%yt-dlp%R%
+echo %CIANO%  [PASSO 1 de 3]%R% %NEG%yt-dlp%R% %CINZA%- o programa que faz os downloads%R%
 echo.
 where yt-dlp >nul 2>&1
 if not errorlevel 1 (
     echo   %VERDE%[V] yt-dlp ja esta instalado. Pulando...%R%
     goto passo2
 )
-echo   %AZUL%Instalando o yt-dlp, aguarde...%R%
-echo.
-winget install --id yt-dlp.yt-dlp -e --source winget --accept-source-agreements --accept-package-agreements
-call :atualizar_path
+if "%TEM_WINGET%"=="1" (
+    echo   %AZUL%Instalando o yt-dlp pelo winget, aguarde...%R%
+    echo.
+    winget install --id yt-dlp.yt-dlp -e --source winget --skip-dependencies --accept-source-agreements --accept-package-agreements
+    call :atualizar_path
+)
 where yt-dlp >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo %FUNDO_VERM%  [ERRO] Nao foi possivel instalar o yt-dlp.  %R%
-    call :dicas_erro
-) else (
+    echo   %AMAR%Plano B: baixando o yt-dlp direto do site oficial...%R%
     echo.
-    echo   %VERDE%[OK] yt-dlp instalado com sucesso.%R%
+    call :baixar_exe "%URL_YTDLP%" "yt-dlp.exe"
 )
+call :resultado_passo yt-dlp
 
 REM ============================================================
-REM  PASSO 2 - FFmpeg (pergunta antes)
+REM  PASSO 2 - Deno (o YouTube exige para o yt-dlp funcionar)
 REM ============================================================
 :passo2
 echo.
 echo %LINHA%
 echo.
-echo %CIANO%  [PASSO 2 de 2]%R% %NEG%FFmpeg%R% %CINZA%- necessario para converter em MP3%R%
+echo %CIANO%  [PASSO 2 de 3]%R% %NEG%Deno%R% %CINZA%- obrigatorio para baixar do YouTube%R%
+echo.
+where deno >nul 2>&1
+if not errorlevel 1 (
+    echo   %VERDE%[V] Deno ja esta instalado. Pulando...%R%
+    goto passo3
+)
+if "%TEM_WINGET%"=="1" (
+    echo   %AZUL%Instalando o Deno pelo winget, aguarde...%R%
+    echo.
+    winget install --id DenoLand.Deno -e --source winget --accept-source-agreements --accept-package-agreements
+    call :atualizar_path
+)
+where deno >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo   %AMAR%Plano B: baixando o Deno direto do site oficial...%R%
+    echo.
+    call :baixar_zip "%URL_DENO%" "deno.exe"
+)
+call :resultado_passo deno
+
+REM ============================================================
+REM  PASSO 3 - FFmpeg (pergunta antes)
+REM ============================================================
+:passo3
+echo.
+echo %LINHA%
+echo.
+echo %CIANO%  [PASSO 3 de 3]%R% %NEG%FFmpeg%R% %CINZA%- necessario para converter em MP3%R%
 echo.
 where ffmpeg >nul 2>&1
 if not errorlevel 1 (
@@ -127,44 +168,47 @@ if errorlevel 2 (
     goto fim
 )
 echo.
-echo   %AZUL%Instalando o FFmpeg, aguarde... pode demorar alguns minutos.%R%
-echo.
-winget install --id Gyan.FFmpeg -e --source winget --accept-source-agreements --accept-package-agreements
-call :atualizar_path
+if "%TEM_WINGET%"=="1" (
+    echo   %AZUL%Instalando o FFmpeg pelo winget, aguarde... pode demorar alguns minutos.%R%
+    echo.
+    winget install --id Gyan.FFmpeg -e --source winget --accept-source-agreements --accept-package-agreements
+    call :atualizar_path
+)
 where ffmpeg >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo %FUNDO_VERM%  [ERRO] Nao foi possivel instalar o FFmpeg.  %R%
-    call :dicas_erro
-) else (
+    echo   %AMAR%Plano B: baixando o FFmpeg direto do site oficial ^(cerca de 90 MB^)...%R%
     echo.
-    echo   %VERDE%[OK] FFmpeg instalado com sucesso.%R%
+    call :baixar_zip "%URL_FFMPEG%" "ffmpeg.exe"
 )
+call :resultado_passo ffmpeg
 
 REM ============================================================
 REM  RESUMO FINAL
 REM ============================================================
 :fim
+call :atualizar_path
 echo.
 echo %LINHA%
 echo.
 echo   %NEG%RESUMO:%R%
-where yt-dlp >nul 2>&1 && (echo   %VERDE%[V] yt-dlp%R%) || (echo   %VERM%[X] yt-dlp - nao instalado%R%)
-where ffmpeg >nul 2>&1 && (echo   %VERDE%[V] FFmpeg%R%) || (echo   %VERM%[X] FFmpeg - nao instalado%R%)
+set "TUDO_OK=1"
+where yt-dlp >nul 2>&1 && (echo   %VERDE%[V] yt-dlp%R%) || (echo   %VERM%[X] yt-dlp - nao instalado%R%& set "TUDO_OK=0")
+where deno >nul 2>&1 && (echo   %VERDE%[V] Deno%R%) || (echo   %VERM%[X] Deno - nao instalado%R%& set "TUDO_OK=0")
+where ffmpeg >nul 2>&1 && (echo   %VERDE%[V] FFmpeg%R%) || (echo   %VERM%[X] FFmpeg - nao instalado%R%& set "TUDO_OK=0")
 echo.
 echo %LINHA%
 echo.
 echo   %CINZA%Criado por%R% %NEG%%MAGENTA%Michael Brasil Tech%R%  %CINZA%-%R%  %AMAR%Gostou? Apoie:%R% %NEG%%VERDE%(94) 99177-0707%R%
 echo.
 
-REM Quando chamado pelo baixar-musica.bat, volta direto para ele
+REM Quando chamado pelo baixador, volta direto para ele
 if /i "%~1"=="/chamado" (
     pause
     exit /b 0
 )
 
-where yt-dlp >nul 2>&1 || goto fim_pause
-where ffmpeg >nul 2>&1 || goto fim_pause
+if "%TUDO_OK%"=="0" goto fim_pause
 if not exist "%~dp0baixar-musica.bat" goto fim_pause
 <nul set /p "=  %AMAR%Tudo pronto. Abrir o Baixador de Musicas agora? [S/N]: %R%"
 choice /c SN /n
@@ -178,30 +222,56 @@ pause
 exit /b 0
 
 REM ============================================================
-REM  SEM WINGET
-REM ============================================================
-:sem_winget
-echo.
-echo %FUNDO_VERM%                                                                %R%
-echo %FUNDO_VERM%     ATENCAO: O WINGET NAO FOI ENCONTRADO NESTE COMPUTADOR      %R%
-echo %FUNDO_VERM%                                                                %R%
-echo.
-echo %VERM%  O winget vem no aplicativo "Instalador de Aplicativo" da Microsoft.%R%
-echo.
-echo   %AMAR%Como resolver:%R%
-echo    1. Instale ou atualize o %BRANCO%Instalador de Aplicativo%R% na Microsoft Store
-echo    2. Reinicie o computador
-echo    3. Rode este instalador de novo
-echo.
-<nul set /p "=  %AMAR%Abrir a pagina da Microsoft Store agora? [S/N]: %R%"
-choice /c SN /n
-if errorlevel 2 goto fim_pause
-start "" "ms-windows-store://pdp/?productid=9NBLGGH4NNS1"
-goto fim_pause
-
-REM ============================================================
 REM  SUB-ROTINAS
 REM ============================================================
+
+REM Mostra se o passo deu certo (%1 = nome do comando)
+:resultado_passo
+call :atualizar_path
+where %1 >nul 2>&1
+if errorlevel 1 (
+    echo.
+    echo %FUNDO_VERM%  [ERRO] Nao foi possivel instalar: %1  %R%
+    call :dicas_erro
+) else (
+    echo.
+    echo   %VERDE%[OK] %1 instalado com sucesso.%R%
+)
+exit /b 0
+
+REM Cria a pasta MichaelTech\bin e coloca no PATH do usuario (uma vez so)
+:preparar_pasta_bin
+if not exist "%PASTA_BIN%" mkdir "%PASTA_BIN%"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$d=Join-Path $env:LOCALAPPDATA 'MichaelTech\bin'; $k=[Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment',$true); $p=[string]$k.GetValue('Path','',[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames); if(($p -split ';') -notcontains $d){ $n=(($p.TrimEnd(';')),$d -ne '') -join ';'; $k.SetValue('Path',$n,[Microsoft.Win32.RegistryValueKind]::ExpandString) }; $k.Close()" >nul 2>&1
+set "PATH=%PASTA_BIN%;%PATH%"
+exit /b 0
+
+REM Baixa um .exe direto  (%1 = link   %2 = nome do arquivo)
+:baixar_exe
+call :preparar_pasta_bin
+"%SystemRoot%\System32\curl.exe" -L --fail --retry 3 -# -o "%PASTA_BIN%\%~2" "%~1"
+if errorlevel 1 if exist "%PASTA_BIN%\%~2" del "%PASTA_BIN%\%~2"
+exit /b 0
+
+REM Baixa um .zip, extrai com o tar do Windows e copia o programa
+REM (%1 = link   %2 = .exe que precisa existir dentro do zip)
+:baixar_zip
+call :preparar_pasta_bin
+set "TMPZ=%TEMP%\michaeltech-%RANDOM%%RANDOM%"
+mkdir "%TMPZ%" >nul 2>&1
+"%SystemRoot%\System32\curl.exe" -L --fail --retry 3 -# -o "%TMPZ%\pacote.zip" "%~1"
+if errorlevel 1 goto baixar_zip_fim
+echo   %CINZA%Extraindo...%R%
+"%SystemRoot%\System32\tar.exe" -xf "%TMPZ%\pacote.zip" -C "%TMPZ%"
+if errorlevel 1 goto baixar_zip_fim
+for /r "%TMPZ%" %%F in (%~2) do if exist "%%F" (
+    copy /y "%%~dpF*.exe" "%PASTA_BIN%\" >nul
+    if exist "%%~dpF*.dll" copy /y "%%~dpF*.dll" "%PASTA_BIN%\" >nul
+)
+:baixar_zip_fim
+if exist "%TMPZ%\pacote.zip" del /q "%TMPZ%\pacote.zip"
+if exist "%TMPZ%" rd /s /q "%TMPZ%"
+exit /b 0
 
 REM Recarrega o PATH do registro para reconhecer programas recem
 REM instalados sem precisar fechar e abrir o terminal.
@@ -210,16 +280,16 @@ set "PATH_SYS="
 set "PATH_USR="
 for /f "tokens=2,*" %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do set "PATH_SYS=%%B"
 for /f "tokens=2,*" %%A in ('reg query "HKCU\Environment" /v Path 2^>nul') do set "PATH_USR=%%B"
-call set "PATH=%LOCALAPPDATA%\Microsoft\WindowsApps;%LOCALAPPDATA%\Microsoft\WinGet\Links;%PATH_SYS%;%PATH_USR%;%PATH%"
+call set "PATH=%LOCALAPPDATA%\MichaelTech\bin;%LOCALAPPDATA%\Microsoft\WindowsApps;%LOCALAPPDATA%\Microsoft\WinGet\Links;%PATH_SYS%;%PATH_USR%;%PATH%"
 exit /b 0
 
 :dicas_erro
 echo.
 echo %VERM%  Possiveis causas:%R%
 echo %VERM%   - Sem internet ou rede bloqueando o download%R%
+echo %VERM%   - Antivirus bloqueou o arquivo baixado%R%
 echo %VERM%   - A instalacao foi cancelada na janela de permissao%R%
-echo %VERM%   - O winget esta desatualizado%R%
 echo.
-echo   %AMAR%Tente:%R% atualizar o %BRANCO%Instalador de Aplicativo%R% na Microsoft Store,
-echo   reiniciar o PC e rodar este instalador de novo.
+echo   %AMAR%Tente:%R% reiniciar o PC e rodar este instalador de novo.
+echo   %CINZA%Se continuar, mande um print para o suporte.%R%
 exit /b 0
